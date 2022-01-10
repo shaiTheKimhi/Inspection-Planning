@@ -224,7 +224,8 @@ class MapEnvironment(object):
         @param points2 list of inspected points.
         '''
         # TODO: Task 2.4
-
+        #there might be more efficient implemetations
+        return set(points1).union(set(points2))
         pass
 
     def compute_coverage(self, inspected_points):
