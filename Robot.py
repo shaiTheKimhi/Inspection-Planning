@@ -40,8 +40,9 @@ class Robot(object):
         prev = np.array((0,0)) #previous point
         points = []
         for i, angle in enumerate(given_config):
-            d = np.array(np.math.cos(angle) * self.links[i], np.math.sin(angle) * self.links[i])
+            d = np.array([np.math.cos(angle) * self.links[i], np.math.sin(angle) * self.links[i]])
             points.append(prev + d)
+            prev = points[-1]
 
         return points
 
@@ -80,4 +81,5 @@ class Robot(object):
         return LineString(positions).is_simple
             
         
-    
+r = Robot()
+print(r.compute_forward_kinematics([0,0,0,0]))
