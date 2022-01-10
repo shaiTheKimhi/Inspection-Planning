@@ -37,9 +37,14 @@ class Robot(object):
         @param given_config Given configuration.
         '''
         # TODO: Task 2.2
+        prev = np.array((0,0)) #previous point
+        points = []
+        for i, angle in enumerate(given_config):
+            d = np.array(np.math.cos(angle) * self.links[i], np.math.sin(angle) * self.links[i])
+            points.append(prev + d)
 
+        return points
 
-        pass
 
     def compute_ee_angle(self, given_config):
         '''
