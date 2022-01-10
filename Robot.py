@@ -10,7 +10,7 @@ class Robot(object):
     def __init__(self):
 
         # define robot properties
-        self.links = np.array([80.0,70.0,40.0,40.0])
+        self.links = np.array([80.0,70.0,40.0,40.0]) #the length of each link
         self.dim = len(self.links)
 
         # Robot field of fiew (FOV) for inspecting points, from [-np.pi/6, np.pi/6]
@@ -25,9 +25,11 @@ class Robot(object):
         @param prev_config Previous configuration.
         @param next_config Next configuration.
         '''
-        # TODO: Task 2.2
-
-        pass
+        #Task 2.2
+        #Computes the distance between the edge inspector, TODO: check if to compare all links or just edges
+        p1 = self.compute_forward_kinematics(prev_config)[-1]
+        p2 = self.compute_forward_kinematics(next_config)[-1]
+        return np.linalg.norm(p1-p2)
 
     def compute_forward_kinematics(self, given_config):
         '''
@@ -35,6 +37,7 @@ class Robot(object):
         @param given_config Given configuration.
         '''
         # TODO: Task 2.2
+
 
         pass
 
@@ -68,6 +71,8 @@ class Robot(object):
         @param robot_positions Given links positions.
         '''
         # TODO: Task 2.2
-
-        pass
+        positions = [tuple(loc) for loc in robot_positions]
+        return LineString(positions).is_simple
+            
+        
     
