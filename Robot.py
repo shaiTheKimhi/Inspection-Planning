@@ -26,10 +26,11 @@ class Robot(object):
         @param next_config Next configuration.
         '''
         #Task 2.2
-        #Computes the distance between the edge inspector, TODO: check if to compare all links or just edges
-        p1 = self.compute_forward_kinematics(prev_config)[-1]
-        p2 = self.compute_forward_kinematics(next_config)[-1]
-        return np.linalg.norm(p1-p2)
+        return np.linalg.norm(np.fabs(((next_config - prev_config + np.pi) % (2. * np.pi)) - np.pi))
+        # #Computes the distance between the edge inspector, TODO: check if to compare all links or just edges
+        # p1 = self.compute_forward_kinematics(prev_config)[-1]
+        # p2 = self.compute_forward_kinematics(next_config)[-1]
+        # return np.linalg.norm(p1-p2)
 
     def compute_forward_kinematics(self, given_config):
         '''
@@ -37,14 +38,9 @@ class Robot(object):
         @param given_config Given configuration.
         '''
         # TODO: Task 2.2
-        prev = np.array((0,0)) #previous point
-        points = []
-        for i, angle in enumerate(given_config):
-            d = np.array([np.math.cos(angle) * self.links[i], np.math.sin(angle) * self.links[i]])
-            points.append(prev + d)
-            prev = points[-1]
-
-        return points
+        angles_rel_x = np.cumsum(given_config)
+        vecs = np.array([self.links]).T * np.stack([np.cos(angles_rel_x), np.sin(angles_rel_x)]).T
+        return np.cumsum(vecs, axis=0)
 
 
     def compute_ee_angle(self, given_config):
@@ -79,7 +75,3 @@ class Robot(object):
         # TODO: Task 2.2
         positions = [tuple(loc) for loc in robot_positions]
         return LineString(positions).is_simple
-            
-        
-r = Robot()
-print(r.compute_forward_kinematics([0,0,0,0]))
