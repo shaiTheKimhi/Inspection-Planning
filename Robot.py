@@ -26,11 +26,16 @@ class Robot(object):
         @param next_config Next configuration.
         '''
         #Task 2.2
-        return np.linalg.norm(np.fabs(((next_config - prev_config + np.pi) % (2. * np.pi)) - np.pi))
-        # #Computes the distance between the edge inspector, TODO: check if to compare all links or just edges
-        # p1 = self.compute_forward_kinematics(prev_config)[-1]
-        # p2 = self.compute_forward_kinematics(next_config)[-1]
-        # return np.linalg.norm(p1-p2)
+        # return np.linalg.norm(np.fabs(((next_config - prev_config + np.pi) % (2. * np.pi)) - np.pi))
+        #Computes the distance between the edge inspector, TODO: check if to compare all links or just edges
+        if len(prev_config.shape) > 1:
+            p1 = np.apply_along_axis(self.compute_forward_kinematics, 1, prev_config)
+            p2 = np.apply_along_axis(self.compute_forward_kinematics, 1, next_config)
+            return np.linalg.norm(p1 - p2, axis=(-1, -2))
+        else:
+            p1 = self.compute_forward_kinematics(prev_config)
+            p2 = self.compute_forward_kinematics(next_config)
+        return np.linalg.norm(p1 - p2)
 
     def compute_forward_kinematics(self, given_config):
         '''
