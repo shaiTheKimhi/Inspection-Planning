@@ -225,8 +225,12 @@ class MapEnvironment(object):
         '''
         # TODO: Task 2.4
         #there might be more efficient implemetations
-        return set(points1).union(set(points2))
-        pass
+        if len(points1) == 0:
+            return points2
+        elif len(points2) ==0:
+            return points1
+        else:
+            return np.unique(np.concatenate((points1, points2), axis=0), axis=0)
 
     def compute_coverage(self, inspected_points):
         '''

@@ -13,7 +13,6 @@ class RRTMotionPlanner(object):
         # set search params
         self.ext_mode = ext_mode
         self.goal_prob = goal_prob
-        self.step_size = 5. * np.pi / 180.
 
     def plan(self):
         '''
@@ -26,13 +25,12 @@ class RRTMotionPlanner(object):
 
         # TODO: Task 2.3
         np.random.seed(1234)
-        display = False
+        display = True
         n = 5000000  # num iterations
         if self.ext_mode == 'E1':
             self.step_size = -1
         elif self.ext_mode == 'E2':
-            assert(self.step_size is not None and self.step_size > 0)
-            self.step_size = self.step_size
+            self.step_size = 10. * np.pi / 180.
         else:
             return []
 
@@ -75,28 +73,35 @@ class RRTMotionPlanner(object):
         plan = np.array(plan)[::-1]
 
         if display:
-            import matplotlib.pyplot as plt
-            self.planning_env.create_map_visualization()
-            self.planning_env.visualize_obstacles(plt.gca())
-            points = np.concatenate([[[0.,0.]], self.planning_env.robot.compute_forward_kinematics(plan[0])])
-            lp = plt.plot(points[:,0], points[:,1],linewidth=3)[0]
-            for i in range(len(plan) - 1):
-                config1 = plan[i]
-                config2 = plan[i + 1]
-                interpolation_steps = int(np.linalg.norm(config2 - config1) // 0.05)
-                interpolated_configs = np.linspace(start=config1, stop=config2, num=interpolation_steps)
-                configs_positions = np.apply_along_axis(self.planning_env.robot.compute_forward_kinematics, 1, interpolated_configs)
-                lines = np.concatenate([np.zeros((configs_positions.shape[0], 1, configs_positions.shape[2])), configs_positions], axis=1)
-                for line in lines:
-                    lp.set_data(line[:, 0], line[:, 1])
-                    plt.pause(0.05)
-            plt.close('all')
+            self.plot_plan(plan, dt=0.05)
 
         # print total path cost and time
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))
         print('Total time: {:.2f}'.format(time.time()-start_time))
 
         return np.array(plan)
+
+    def plot_plan(self, plan, dt=0.05):
+        import matplotlib.pyplot as plt
+        plt.close('all')
+        self.planning_env.create_map_visualization()
+        self.planning_env.visualize_obstacles(plt.gca())
+        points = np.concatenate([[[0., 0.]], self.planning_env.robot.compute_forward_kinematics(plan[0])])
+        lp = plt.plot(points[:, 0], points[:, 1], linewidth=3)[0]
+        ls = plt.scatter(points[:, 0], points[:, 1], c='m')
+        for i in range(len(plan) - 1):
+            config1 = plan[i]
+            config2 = plan[i + 1]
+            interpolation_steps = int(np.linalg.norm(config2 - config1) // 0.05)
+            interpolated_configs = np.linspace(start=config1, stop=config2, num=interpolation_steps)
+            configs_positions = np.apply_along_axis(self.planning_env.robot.compute_forward_kinematics, 1,
+                                                    interpolated_configs)
+            lines = np.concatenate(
+                [np.zeros((configs_positions.shape[0], 1, configs_positions.shape[2])), configs_positions], axis=1)
+            for line in lines:
+                lp.set_data(line[:, 0], line[:, 1])
+                ls.set_offsets(line)
+                plt.pause(dt)
 
     def compute_cost(self, plan):
         '''
