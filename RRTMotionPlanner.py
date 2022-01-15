@@ -24,13 +24,13 @@ class RRTMotionPlanner(object):
         plan = []
 
         # TODO: Task 2.3
-        np.random.seed(1234)
-        display = True
+        # np.random.seed(1234)
+        display = False
         n = 5000000  # num iterations
         if self.ext_mode == 'E1':
             self.step_size = -1
         elif self.ext_mode == 'E2':
-            self.step_size = 10. * np.pi / 180.
+            self.step_size = 5. * np.pi / 180.
         else:
             return []
 

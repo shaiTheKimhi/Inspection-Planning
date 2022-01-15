@@ -26,8 +26,8 @@ class RRTInspectionPlanner(object):
 
         # TODO: Task 2.4
 
-        np.random.seed(1234)
-        display = True
+        # np.random.seed(1234)
+        display = False
         n = 5000000  # num iterations
         if self.ext_mode == 'E1':
             self.step_size = -1
@@ -91,7 +91,6 @@ class RRTInspectionPlanner(object):
 
         if display:
             self.plot_plan(plan, dt=0.05)
-            import pdb; pdb.set_trace()
 
         # print total path cost and time
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))
