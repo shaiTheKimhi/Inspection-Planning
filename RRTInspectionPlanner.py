@@ -42,14 +42,17 @@ class RRTInspectionPlanner(object):
         x_root_id = self.tree.get_idx_for_config(self.planning_env.start)
         x_new_id = x_root_id
         x_new = None
+        goal_points = []
         import tqdm
         for _ in tqdm.tqdm(range(n)):
             # sampling
-            # if np.random.uniform() < self.goal_prob:
-            #     x_rand = self.planning_env.goal
-            # else:
-            #     x_rand = np.random.rand(*self.planning_env.goal.shape) * 2. * np.pi - np.pi
-            x_rand = np.random.rand(*self.planning_env.start.shape) * 2. * np.pi - np.pi
+            if np.random.uniform() < self.goal_prob and len(goal_points) > 0:
+                goal_index = np.random.randint(low=0, high=len(goal_points))
+                x_rand = goal_points[goal_index]
+                mode = 'GOAL'
+            else:
+                x_rand = np.random.rand(*self.planning_env.start.shape) * 2. * np.pi - np.pi
+                mode = 'RAND'
 
             # nearest neighbor
             x_near_id, x_near = self.tree.get_nearest_config(x_rand)
@@ -64,13 +67,17 @@ class RRTInspectionPlanner(object):
             # collision detection
             if self.planning_env.config_validity_checker(x_new) and \
                     self.planning_env.edge_validity_checker(x_near, x_new):
-
-                x_new = self.extend(x_near, x_rand)
-
                 x_new_id = self.tree.add_vertex(x_new, inspected_points=self.planning_env.compute_union_of_points(new_inspected_points, self.tree.vertices[x_near_id].inspected_points))
+
+                if mode == 'GOAL':
+                    goal_points.pop(goal_index)
+
                 self.tree.add_edge(x_near_id, x_new_id, self.planning_env.robot.compute_distance(x_new, x_near))
                 if self.planning_env.compute_coverage(self.tree.vertices[x_new_id].inspected_points) >= self.coverage:
                     break
+            elif len(new_inspected_points) > 0 and mode != 'GOAL':
+                goal_points.append(x_new)
+
 
         # build plan
         ratio = self.planning_env.compute_coverage(self.tree.vertices[x_new_id].inspected_points)
