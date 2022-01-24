@@ -42,20 +42,35 @@ class RRTInspectionPlanner(object):
         x_root_id = self.tree.get_idx_for_config(self.planning_env.start)
         x_new_id = x_root_id
         x_new = None
-        goal_points = []
+        goal_points = {}
+        explored_points = []
+        max_coverage = 0.
+        max_coverage_tree = RRTTree(self.planning_env, task="ip")
         import tqdm
         for _ in tqdm.tqdm(range(n)):
             # sampling
             if np.random.uniform() < self.goal_prob and len(goal_points) > 0:
-                goal_index = np.random.randint(low=0, high=len(goal_points))
-                x_rand = goal_points[goal_index]
-                mode = 'GOAL'
-            else:
-                x_rand = np.random.rand(*self.planning_env.start.shape) * 2. * np.pi - np.pi
-                mode = 'RAND'
+                # mode = 'GOAL'
+                chosen_poi = np.random.choice(list(goal_points.keys()))
+                x_rand = goal_points[chosen_poi][np.random.randint(low=0, high=len(goal_points[chosen_poi]))]
 
-            # nearest neighbor
-            x_near_id, x_near = self.tree.get_nearest_config(x_rand)
+                # nearest neighbor
+                _, x_near = max_coverage_tree.get_nearest_config(x_rand)
+                x_near_id = self.tree.get_idx_for_config(x_near)
+            else:
+                # mode = 'RAND'
+                x_rand = np.random.rand(*self.planning_env.start.shape) * 2. * np.pi - np.pi
+                rand_inspected_points = self.planning_env.get_inspected_points(x_rand)
+                if len(rand_inspected_points) > 0:
+                    for poi in rand_inspected_points:
+                        if str(poi) in goal_points.keys():
+                            if str(poi) not in explored_points:
+                                goal_points[str(poi)].append(x_rand)
+                        else:
+                            goal_points[str(poi)] = [x_rand]
+
+                # nearest neighbor
+                x_near_id, x_near = self.tree.get_nearest_config(x_rand)
 
             # extend
             x_new = self.extend(x_near, x_rand)
@@ -67,17 +82,26 @@ class RRTInspectionPlanner(object):
             # collision detection
             if self.planning_env.config_validity_checker(x_new) and \
                     self.planning_env.edge_validity_checker(x_near, x_new):
-                x_new_id = self.tree.add_vertex(x_new, inspected_points=self.planning_env.compute_union_of_points(new_inspected_points, self.tree.vertices[x_near_id].inspected_points))
 
-                if mode == 'GOAL':
-                    goal_points.pop(goal_index)
+                curr_union_pois = self.planning_env.compute_union_of_points(new_inspected_points, self.tree.vertices[x_near_id].inspected_points)
+                x_new_id = self.tree.add_vertex(x_new, inspected_points=curr_union_pois)
 
+                # for poi in new_inspected_points:
+                #     if str(poi) in goal_points.keys():
+                #         explored_points.append(str(poi))
+                #         goal_points.pop(str(poi))
+
+                curr_coverage = self.planning_env.compute_coverage(self.tree.vertices[x_new_id].inspected_points)
                 self.tree.add_edge(x_near_id, x_new_id, self.planning_env.robot.compute_distance(x_new, x_near))
-                if self.planning_env.compute_coverage(self.tree.vertices[x_new_id].inspected_points) >= self.coverage:
+                if curr_coverage >= self.coverage:
                     break
-            elif len(new_inspected_points) > 0 and mode != 'GOAL':
-                goal_points.append(x_new)
-
+                elif curr_coverage > max_coverage:
+                    max_coverage_tree = RRTTree(self.planning_env, task="ip")
+                    max_coverage_tree.add_vertex(x_new, inspected_points=curr_union_pois)
+                    max_coverage = curr_coverage
+                    print(max_coverage)
+                elif curr_coverage == max_coverage:
+                    max_coverage_tree.add_vertex(x_new, inspected_points=curr_union_pois)
 
         # build plan
         ratio = self.planning_env.compute_coverage(self.tree.vertices[x_new_id].inspected_points)
@@ -91,6 +115,7 @@ class RRTInspectionPlanner(object):
 
         if display:
             self.plot_plan(plan, dt=0.05)
+            import pdb; pdb.set_trace()
 
         # print total path cost and time
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))
