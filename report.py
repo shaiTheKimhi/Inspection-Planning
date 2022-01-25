@@ -5,6 +5,7 @@ from RRTInspectionPlanner import RRTInspectionPlanner
 import time
 import os
 import pickle
+import numpy as np
 
 os.system('rm -f *.gif')
 
@@ -33,9 +34,9 @@ planning_env = MapEnvironment(json_file=map, task=task)
 ip_results = {}
 for mode in ['E1', 'E2']:
     ip_results[mode] = {}
-    for goal_prob in [0.05, 0.2]:
+    for goal_prob in [0.05, 0.2][::-1]:
         ip_results[mode][goal_prob] = {'cost': [], 'time': []}
-        for coverage in [0.75, 0.5]:
+        for coverage in [0.5, 0.75][::-1]:
             ip_results[mode][goal_prob] = {'cost': [], 'time': []}
             for i in range(10):
                 print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    coverage: ' + str(coverage) + '    iter: ' + str(i + 1) + '/' + str(10))
