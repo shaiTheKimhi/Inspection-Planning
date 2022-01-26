@@ -28,7 +28,7 @@ class RRTInspectionPlanner(object):
 
         # np.random.seed(1234)
         display = False
-        n = 5000000  # num iterations
+        n = 200000  # num iterations
         if self.ext_mode == 'E1':
             self.step_size = -1
         elif self.ext_mode == 'E2':
@@ -52,8 +52,15 @@ class RRTInspectionPlanner(object):
             # sampling
             if np.random.uniform() < self.goal_prob and len(goal_points) > 0:
                 # mode = 'GOAL'
-                chosen_poi = np.random.choice(list(goal_points.keys()))
-                x_rand = goal_points[chosen_poi][np.random.randint(low=0, high=len(goal_points[chosen_poi]))]
+                x_rand = np.random.rand(*self.planning_env.start.shape) * 2. * np.pi - np.pi
+                rand_inspected_points = self.planning_env.get_inspected_points(x_rand)
+                if len(rand_inspected_points) > 0:
+                    for poi in rand_inspected_points:
+                        if str(poi) in goal_points.keys():
+                            if str(poi) not in explored_points:
+                                goal_points[str(poi)].append(x_rand)
+                        else:
+                            goal_points[str(poi)] = [x_rand]
 
                 # nearest neighbor
                 _, x_near = max_coverage_tree.get_nearest_config(x_rand)
@@ -87,11 +94,6 @@ class RRTInspectionPlanner(object):
                 curr_union_pois = self.planning_env.compute_union_of_points(new_inspected_points, self.tree.vertices[x_near_id].inspected_points)
                 x_new_id = self.tree.add_vertex(x_new, inspected_points=curr_union_pois)
 
-                # for poi in new_inspected_points:
-                #     if str(poi) in goal_points.keys():
-                #         explored_points.append(str(poi))
-                #         goal_points.pop(str(poi))
-
                 curr_coverage = self.planning_env.compute_coverage(self.tree.vertices[x_new_id].inspected_points)
                 self.tree.add_edge(x_near_id, x_new_id, self.planning_env.robot.compute_distance(x_new, x_near))
                 if curr_coverage >= self.coverage:
@@ -100,7 +102,7 @@ class RRTInspectionPlanner(object):
                     max_coverage_tree = RRTTree(self.planning_env, task="ip")
                     max_coverage_tree.add_vertex(x_new, inspected_points=curr_union_pois)
                     max_coverage = curr_coverage
-                    print(max_coverage)
+                    #print(max_coverage)
                 elif curr_coverage == max_coverage:
                     max_coverage_tree.add_vertex(x_new, inspected_points=curr_union_pois)
 
