@@ -6,7 +6,7 @@ import time
 import os
 import pickle
 
-os.system('rm -f '*.gif')
+os.system('rm -f *.gif')
 
 task = 'mp'
 map = 'map_mp.json'
@@ -17,7 +17,7 @@ for mode in ['E1', 'E2']:
     for goal_prob in [0.05, 0.2]:
         mp_results[mode][goal_prob] = {'cost': [], 'time': []}
         for i in range(10):
-            print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    iter: ' + str(i+1) + '/' + str(10)))
+            print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    iter: ' + str(i+1) + '/' + str(10))
             planner = RRTMotionPlanner(planning_env=planning_env, ext_mode='E1', goal_prob=0.2)
             start_time = time.time()
             plan = planner.plan()
@@ -38,7 +38,7 @@ for mode in ['E1', 'E2']:
         for coverage in [0.5, 0.75]:
             ip_results[mode][goal_prob] = {'cost': [], 'time': []}
             for i in range(10):
-                print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    coverage: ' + str(coverage) + '    iter: ' + str(i + 1) + '/' + str(10)))
+                print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    coverage: ' + str(coverage) + '    iter: ' + str(i + 1) + '/' + str(10))
                 planner = RRTInspectionPlanner(planning_env=planning_env, ext_mode=mode, goal_prob=goal_prob, coverage=coverage)
                 start_time = time.time()
                 plan = planner.plan()
@@ -63,5 +63,5 @@ print('----------------')
 for mode in ['E1', 'E2']:
     for goal_prob in [0.05, 0.2]:
         for coverage in [0.5, 0.75]:
-    print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    coverage: ' + str(coverage) + '    avg_time: ' + str(np.mean(mp_results[mode][goal_prob]['time'])) + '    avg_cost: ' + str(np.mean(mp_results[mode][goal_prob]['cost'])))
+           print('mode: ' + mode + '    goal_prob: ' + str(goal_prob) + '    coverage: ' + str(coverage) + '    avg_time: ' + str(np.mean(mp_results[mode][goal_prob]['time'])) + '    avg_cost: ' + str(np.mean(mp_results[mode][goal_prob]['cost'])))
 
