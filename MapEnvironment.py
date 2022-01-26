@@ -141,6 +141,13 @@ class MapEnvironment(object):
                 if not self.robot.validate_robot(config_positions):
                     return False
 
+            # verify that all robot joints (and links) are between world boundaries
+            if len(np.where(configs_positions[:,:,0] < self.xlimit[0])[0]) > 0 or \
+               len(np.where(configs_positions[:,:,1] < self.ylimit[0])[0]) > 0 or \
+               len(np.where(configs_positions[:,:,0] > self.xlimit[1])[0]) > 0 or \
+               len(np.where(configs_positions[:,:,1] > self.ylimit[1])[0]) > 0:
+               return False
+
         return True
 
     def get_inspected_points(self, config):
