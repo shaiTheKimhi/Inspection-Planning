@@ -40,8 +40,7 @@ class RRTMotionPlanner(object):
         x_root_id = self.tree.get_idx_for_config(self.planning_env.start)
         x_new_id = x_root_id
         x_new = None
-        import tqdm
-        for _ in tqdm.tqdm(range(n)):
+        for _ in range(n):
             # sampling
             if np.random.uniform() < self.goal_prob:
                 x_rand = self.planning_env.goal
@@ -74,6 +73,7 @@ class RRTMotionPlanner(object):
 
         if display:
             self.plot_plan(plan, dt=0.05)
+            import pdb; pdb.set_trace()
 
         # print total path cost and time
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))

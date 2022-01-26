@@ -47,8 +47,7 @@ class RRTInspectionPlanner(object):
         max_coverage = 0.
         max_coverage_tree = RRTTree(self.planning_env, task="ip")
         max_coverage_tree.add_vertex(self.planning_env.start, inspected_points=self.planning_env.get_inspected_points(self.planning_env.start))
-        import tqdm
-        for _ in tqdm.tqdm(range(n)):
+        for _ in range(n):
             # sampling
             if np.random.uniform() < self.goal_prob and len(goal_points) > 0:
                 # mode = 'GOAL'
